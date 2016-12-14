@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ### BEGIN INIT INFO
-# Provides:          door-audio
+# Provides:          card-reader
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
@@ -13,13 +13,13 @@
 . /lib/lsb/init-functions
 
 do_start () {
-    log_daemon_msg "Starting system door-audio daemon"
-    start-stop-daemon --start --pidfile /var/run/door-audio.pid --make-pidfile --user root --chuid root --startas /usr/bin/python -- /usr/local/bin/FreesideDoorMon/DoorAudio/DoorAudio.py
+    log_daemon_msg "Starting system card-reader daemon"
+    start-stop-daemon --start --pidfile /var/run/card-reader.pid --make-pidfile --user root --chuid root --startas /usr/bin/python -- /usr/local/bin/FreesideDoorMon/CardReader/CardReader.py
     log_end_msg $?
 }
 do_stop () {
-    log_daemon_msg "Stopping system door-audio daemon"
-    start-stop-daemon --stop --pidfile /var/run/door-audio.pid --retry 10
+    log_daemon_msg "Stopping system card-reader daemon"
+    start-stop-daemon --stop --pidfile /var/run/card-reader.pid --retry 10
     log_end_msg $?
 }
 
@@ -35,11 +35,11 @@ case "$1" in
         ;;
 
     status)
-        status_of_proc door-audio python && exit 0 || exit $?
+        status_of_proc card-reader python && exit 0 || exit $?
         ;;
 
     *)
-        echo "Usage: /etc/init.d/door-audio.sh {start|stop|restart|status}"
+        echo "Usage: /etc/init.d/card-reader.sh {start|stop|restart|status}"
         exit 1
         ;;
 
