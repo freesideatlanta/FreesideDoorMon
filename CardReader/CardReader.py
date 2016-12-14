@@ -20,12 +20,13 @@ def gpio_callback_b():
 	readQueue.put(1)
 	while wiringpi.digitalRead(SENSE_B) == 0:
 		pass
+
 #Setup Weigand IO
 wiringpi.wiringPiSetupGpio()
 wiringpi.pinMode(SENSE_A,wiringpi.GPIO.INPUT)
 wiringpi.pinMode(SENSE_B,wiringpi.GPIO.INPUT)
 
-wiringpi.pullUpDnControl(SENSE_A, wiringpi.GPIO.PUD_DOWN)
+wiringpi.pullUpDnControl(SENSE_A,wiringpi.GPIO.PUD_DOWN)
 wiringpi.pullUpDnControl(SENSE_B,wiringpi.GPIO.PUD_DOWN)
 
 wiringpi.wiringPiISR(SENSE_A,wiringpi.GPIO.INT_EDGE_FALLING, gpio_callback_a)
@@ -39,7 +40,8 @@ sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 while True:
 	wiringpi.delay(10)
 	if not readQueue.empty():
-		wiringpi.delay(300)	#Wait for all data to arrive. Note* There's got to be abetter way todetect finished. Also first read always reads 28 bits. No Idea why.
+		wiringpi.delay(300)	#Wait for all data to arrive. Note* There's) got to be abetter way todetect finished. Also first read always reads 28 bits. No Idea why.
+
 		readCard = "" 
 		while not readQueue.empty():
 			readCard += str(readQueue.get())
@@ -48,3 +50,4 @@ while True:
 			card = str(int(readCard[1:9],2)) + str(int(readCard[9:25],2))
 			sock.sendto('{"action" : "cardRead", "location" : "frontDoor", "id" : "'  + card + '" }'  , ('255.255.255.255', 50505))
 			print card
+
