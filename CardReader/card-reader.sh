@@ -14,7 +14,7 @@
 
 do_start () {
     log_daemon_msg "Starting system card-reader daemon"
-    start-stop-daemon --start --pidfile /var/run/card-reader.pid --make-pidfile --user root --chuid root --startas /usr/bin/python -- /usr/local/bin/FreesideDoorMon/CardReader/CardReader.py
+    start-stop-daemon --start --background --pidfile /var/run/card-reader.pid --make-pidfile --user root --chuid root --startas /usr/bin/python -- /usr/local/bin/FreesideDoorMon/CardReader/CardReader.py
     log_end_msg $?
 }
 do_stop () {

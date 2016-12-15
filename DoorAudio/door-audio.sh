@@ -14,7 +14,7 @@
 
 do_start () {
     log_daemon_msg "Starting system door-audio daemon"
-    start-stop-daemon --start --pidfile /var/run/door-audio.pid --make-pidfile --user root --chuid root --startas /usr/bin/python -- /usr/local/bin/FreesideDoorMon/DoorAudio/DoorAudio.py
+    start-stop-daemon --start --background --pidfile /var/run/door-audio.pid --make-pidfile --user root --chuid root --startas /usr/bin/python -- /usr/local/bin/FreesideDoorMon/DoorAudio/DoorAudio.py
     log_end_msg $?
 }
 do_stop () {
