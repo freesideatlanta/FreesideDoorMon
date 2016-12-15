@@ -47,7 +47,9 @@ while True:
 			readCard += str(readQueue.get())
 
 		if len(readCard) == 26:
-			card = str(int(readCard[1:9],2)) + str(int(readCard[9:25],2))
+			fac = str(int(readCard[1:9],2))
+			code = str(int(readCard[9:25],2))
+			card = fac + code.zfill(5)
 			sock.sendto('{"action" : "cardRead", "location" : "frontDoor", "id" : "'  + card + '" }'  , ('255.255.255.255', 50505))
 			print card
 
