@@ -16,18 +16,10 @@ readQueue = Queue.Queue()
 
 #Weigand ReaderInterrupts
 def gpio_callback_a():
-	global firstA
-	if firstA:
-		firstA = False
-	else:
-		readQueue.put(0)
+	readQueue.put(0)
 
 def gpio_callback_b():
-	global firstB
-	if firstB:
-		firstB = False
-	else:
-		readQueue.put(1)
+	readQueue.put(1)
 
 readQueue = Queue.Queue()
 
@@ -36,8 +28,8 @@ wiringpi.wiringPiSetupGpio()
 wiringpi.pinMode(SENSE_A,wiringpi.GPIO.INPUT)
 wiringpi.pinMode(SENSE_B,wiringpi.GPIO.INPUT)
 
-wiringpi.pullUpDnControl(SENSE_A,wiringpi.GPIO.PUD_UP)
-wiringpi.pullUpDnControl(SENSE_B,wiringpi.GPIO.PUD_UP)
+wiringpi.pullUpDnControl(SENSE_A,wiringpi.GPIO.PUD_DOWN)
+wiringpi.pullUpDnControl(SENSE_B,wiringpi.GPIO.PUD_DOWN)
 
 wiringpi.wiringPiISR(SENSE_A,wiringpi.GPIO.INT_EDGE_FALLING, gpio_callback_a)
 wiringpi.wiringPiISR(SENSE_B,wiringpi.GPIO.INT_EDGE_FALLING, gpio_callback_b)
@@ -46,16 +38,22 @@ wiringpi.wiringPiISR(SENSE_B,wiringpi.GPIO.INT_EDGE_FALLING, gpio_callback_b)
 sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
+
 #Wait for cardto be read
 while True:
-	wiringpi.delay(10)
+	wiringpi.delay(500)
 	if not readQueue.empty():
 		wiringpi.delay(300)	#Wait for all data to arrive. Note* There's) got to be abetter way todetect finished. Also first read always reads 28 bits. No Idea why.
 
 		readCard = "" 
 		while not readQueue.empty():
 			readCard +=str(readQueue.get())
-
+		print readCard
+		print len(readCard)
+		if len(readCard) == 29:
+			readCard = readCard[:-1]
+		if len(readCard) == 28:
+			readCard = readCard.replace("0","",1).replace("1","",1)
 		if len(readCard) == 26:
 			fac = str(int(readCard[1:9],2))
 			code = str(int(readCard[9:25],2))
