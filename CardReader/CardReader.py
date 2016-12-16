@@ -5,29 +5,39 @@ import wiringpi
 import Queue
 
 import socket
-readQueue = Queue.Queue()
 
 SENSE_A = 17
 SENSE_B = 27
 
+firstA = True
+firstB = True
+
+readQueue = Queue.Queue()
+
 #Weigand ReaderInterrupts
 def gpio_callback_a():
-	readQueue.put(0)
-	while wiringpi.digitalRead(SENSE_A) == 0:
-		pass
+	global firstA
+	if firstA:
+		firstA = False
+	else:
+		readQueue.put(0)
 
 def gpio_callback_b():
-	readQueue.put(1)
-	while wiringpi.digitalRead(SENSE_B) == 0:
-		pass
+	global firstB
+	if firstB:
+		firstB = False
+	else:
+		readQueue.put(1)
+
+readQueue = Queue.Queue()
 
 #Setup Weigand IO
 wiringpi.wiringPiSetupGpio()
 wiringpi.pinMode(SENSE_A,wiringpi.GPIO.INPUT)
 wiringpi.pinMode(SENSE_B,wiringpi.GPIO.INPUT)
 
-wiringpi.pullUpDnControl(SENSE_A,wiringpi.GPIO.PUD_DOWN)
-wiringpi.pullUpDnControl(SENSE_B,wiringpi.GPIO.PUD_DOWN)
+wiringpi.pullUpDnControl(SENSE_A,wiringpi.GPIO.PUD_UP)
+wiringpi.pullUpDnControl(SENSE_B,wiringpi.GPIO.PUD_UP)
 
 wiringpi.wiringPiISR(SENSE_A,wiringpi.GPIO.INT_EDGE_FALLING, gpio_callback_a)
 wiringpi.wiringPiISR(SENSE_B,wiringpi.GPIO.INT_EDGE_FALLING, gpio_callback_b)
@@ -44,7 +54,7 @@ while True:
 
 		readCard = "" 
 		while not readQueue.empty():
-			readCard += str(readQueue.get())
+			readCard +=str(readQueue.get())
 
 		if len(readCard) == 26:
 			fac = str(int(readCard[1:9],2))
