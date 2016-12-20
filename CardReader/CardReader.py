@@ -1,38 +1,36 @@
 
 #Setup Thread To Read Cards
 
-import wiringpi
+import pigpio
+import wiegand
+import time
+
 import Queue
 
 import socket
 
+
+from subprocess import call
+call(["sudo", "pigpiod"])
+
 SENSE_A = 17
 SENSE_B = 27
-
-firstA = True
-firstB = True
 
 readQueue = Queue.Queue()
 
 #Weigand ReaderInterrupts
-def gpio_callback_a():
-	readQueue.put(0)
+def read_callback(bits, code):
+	if bits== 26:
+		fac = (code >> 17) & 0xFF
+		id = (code >> 1) & 0xFFFF
+	readQueue.put(str(fac)+str(id).zfill(5))
 
-def gpio_callback_b():
-	readQueue.put(1)
-
-readQueue = Queue.Queue()
 
 #Setup Weigand IO
-wiringpi.wiringPiSetupGpio()
-wiringpi.pinMode(SENSE_A,wiringpi.GPIO.INPUT)
-wiringpi.pinMode(SENSE_B,wiringpi.GPIO.INPUT)
+pi = pigpio.pi()
+dec = wiegand.decoder(pi, SENSE_A, SENSE_B, read_callback)
 
-wiringpi.pullUpDnControl(SENSE_A,wiringpi.GPIO.PUD_DOWN)
-wiringpi.pullUpDnControl(SENSE_B,wiringpi.GPIO.PUD_DOWN)
 
-wiringpi.wiringPiISR(SENSE_A,wiringpi.GPIO.INT_EDGE_FALLING, gpio_callback_a)
-wiringpi.wiringPiISR(SENSE_B,wiringpi.GPIO.INT_EDGE_FALLING, gpio_callback_b)
 
 #Setup broadcast socket
 sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
@@ -41,19 +39,8 @@ sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
 #Wait for cardto be read
 while True:
-	wiringpi.delay(500)
+
 	if not readQueue.empty():
-		wiringpi.delay(300)	#Wait for all data to arrive. Note* There's) got to be abetter way todetect finished. Also first read always reads 28 bits. No Idea why.
-
-		readCard = "" 
-		while not readQueue.empty():
-			readCard +=str(readQueue.get())
-		print readCard
-		print len(readCard)
-		if len(readCard) == 26:
-			fac = str(int(readCard[1:9],2))
-			code = str(int(readCard[9:25],2))
-			card = fac + code.zfill(5)
-			sock.sendto('{"action" : "cardRead", "location" : "frontDoor", "id" : "'  + card + '" }'  , ('255.255.255.255', 50505))
-			print card
-
+		id = readQueue.get();
+		print id		
+		sock.sendto('{"action" : "cardRead", "location" : "frontDoor", "id" : "'  + id + '" }'  , ('255.255.255.255', 50505))
