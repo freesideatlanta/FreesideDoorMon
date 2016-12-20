@@ -50,10 +50,6 @@ while True:
 			readCard +=str(readQueue.get())
 		print readCard
 		print len(readCard)
-		if len(readCard) == 29:
-			readCard = readCard[:-1]
-		if len(readCard) == 28:
-			readCard = readCard.replace("0","",1).replace("1","",1)
 		if len(readCard) == 26:
 			fac = str(int(readCard[1:9],2))
 			code = str(int(readCard[9:25],2))
